@@ -1,6 +1,36 @@
 import math
 
 def lies_on_path(source, end, graph):
+    v_parent, v_dist = get_shortest_distance_graph(source, graph)
+
+    # Path to Dest
+    paths_to_dest = build_paths(v_parent, end, list(), list())
+    edge_paths = build_edge_paths(paths_to_dest)
+
+    result = list()
+    for src, dest, cost in graph:
+        result.append(True) if tuple([src, dest]) in edge_paths else result.append(False)
+    return result
+
+
+def build_paths(v_parent, dest, current_path, paths):
+    if not dest:
+        paths.append(tuple(current_path[::-1]))
+        return paths
+    for par in v_parent[dest]:
+        paths = build_paths(v_parent, par, current_path + [dest], paths)
+    return paths
+
+
+def build_edge_paths(paths):
+    edge_paths = set()
+    for path in paths:
+        for i in range(0, len(path) - 1):
+            edge_paths.add(tuple([path[i], path[i+1]]))
+            edge_paths.add(tuple([path[i+1], path[i]]))
+    return edge_paths
+
+def get_shortest_distance_graph(source, graph):
     v_parent = dict()
     v_dist = dict()
     heap_map = dict()
@@ -35,29 +65,4 @@ def lies_on_path(source, end, graph):
         if heap_map:
             source = min(heap_map, key=heap_map.get)
 
-    # Path to Dest
-    paths_to_dest = build_paths(v_parent, end, list(), list())
-    edge_paths = build_edge_paths(paths_to_dest)
-
-    result = list()
-    for src, dest, cost in graph:
-        result.append(True) if tuple([src, dest]) in edge_paths else result.append(False)
-    return result
-
-
-def build_paths(v_parent, dest, current_path, paths):
-    if not dest:
-        paths.append(tuple(current_path[::-1]))
-        return paths
-    for par in v_parent[dest]:
-        paths = build_paths(v_parent, par, current_path + [dest], paths)
-    return paths
-
-
-def build_edge_paths(paths):
-    edge_paths = set()
-    for path in paths:
-        for i in range(0, len(path) - 1):
-            edge_paths.add(tuple([path[i], path[i+1]]))
-            edge_paths.add(tuple([path[i+1], path[i]]))
-    return edge_paths
+    return (v_parent, v_dist)
